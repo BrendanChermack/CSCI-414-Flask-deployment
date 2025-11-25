@@ -9,7 +9,7 @@ app = Flask(__name__)
 DATABASE = 'db/books.db'
 
 # MongoDB connection
-MONGO_URL = os.environ.get('MONGODB_URI', 'mongodb://localhost:27017/')
+MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017/')
 client = pymongo.MongoClient(MONGO_URL)
 db = client['book_database']  # MongoDB database
 reviews_collection = db['reviews']  # MongoDB collection for reviews
