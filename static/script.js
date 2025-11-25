@@ -1,4 +1,3 @@
-// Array to store book data
 const books = [];
 
 // Function to add a book to the list and send it to the server
