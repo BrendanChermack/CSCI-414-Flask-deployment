@@ -65,6 +65,27 @@ def get_all_authors():
 #     except Exception as e:
 #         return jsonify({'error': str(e)})
 
+@app.route('/api/search', methods=['GET'])
+def search_books():
+    try:
+        query = request.args.get('q', '')
+        if not query:
+            return jsonify({'error': 'No search query provided'}), 400
+
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT title, publication_year FROM Books WHERE LOWER(title) LIKE ?",
+            ('%' + query.lower() + '%',)
+        )
+        results = cursor.fetchall()
+        conn.close()
+
+        books = [{'title': row[0], 'publication_year': row[1]} for row in results]
+        return jsonify({'results': books})
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
 # API to add a book to the database
 @app.route('/api/add_book', methods=['POST'])
 def add_book():
