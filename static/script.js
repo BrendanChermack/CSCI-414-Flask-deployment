@@ -5,11 +5,15 @@ const books = [];
 function addBook() {
 	const bookTitle = document.getElementById('bookTitle').value;
 	const publicationYear = document.getElementById('publicationYear').value;
+	const authorName = document.getElementById('authorName').value;
+	const bookURL = document.getElementById('bookURL').value;
 
 	// Create a JSON object with book data
 	const bookData = {
 		title: bookTitle,
 		publication_year: publicationYear,
+		author_name: authorName,
+		book_url: bookURL,
 	};
 
 	// Send the book data to the server via POST request
@@ -37,17 +41,20 @@ function addBook() {
 		});
 }
 
-// Function to display books in the list with bookshelf style
+// Function to display books in the list
 function displayBooks() {
 	const bookList = document.getElementById('bookList');
 	bookList.innerHTML = ''; // Clear existing book list
 
 	books.forEach((book) => {
 		const bookElement = document.createElement('div');
-		bookElement.classList.add('book');
 		bookElement.innerHTML = `
-            <h2 class="book-title">${book.title}</h2>
-            <p class="book-year">(${book.publication_year})</p>
+    <div class="bg-[#d2b48c] flex flex-col items-center w-full p-6 rounded-lg shadow-md space-y-4">
+            <h2>Added Successfully :${book.title}</h2>
+            <p>Publication Year: ${book.publication_year}</p>
+            <p>Author Name: ${book.author_name || ''}</p>
+            <img src="${book.book_url || ''}" alt="Book Image">
+            </div>
         `;
 		bookList.appendChild(bookElement);
 	});
@@ -62,12 +69,17 @@ function showAllBooks() {
 			bookList.innerHTML = ''; // Clear existing book list
 			console.log(data);
 			data.books.forEach((book) => {
+				// Access the 'books' key in the JSON response
 				const bookElement = document.createElement('div');
-				bookElement.classList.add('book');
 				bookElement.innerHTML = `
-                    <h2 class="book-title">${book.book_id}</h2>
-                    <h2 class="book-title">${book.title}</h2>
-                    <p class="book-year">(${book.publication_year})</p>
+        <div class="bg-[#d2b48c] flex flex-col items-center w-full p-6 rounded-lg shadow-md space-y-4 h-full">
+                    <h2  >${book.title}</h2>
+                    <p>Publication Year: ${book.publication_year}</p>
+                    <p>Author Name: ${book.author_name || 'No Author'}</p>
+                    <img class="hover:scale-105 transition-all duration-300" src="${
+											book.book_url || ''
+										}" alt="Book Image">
+                    </div>
                 `;
 				bookList.appendChild(bookElement);
 			});
@@ -77,7 +89,45 @@ function showAllBooks() {
 		});
 }
 
-// Function to add a review
+// Function to search for books
+function searchBooks() {
+	const query = document.getElementById('searchBox').value;
+
+	if (!query) {
+		alert('Please enter a search term!');
+		return;
+	}
+
+	fetch(`/api/search?q=${encodeURIComponent(query)}`)
+		.then((response) => response.json())
+		.then((data) => {
+			const searchResults = document.getElementById('searchResults');
+			searchResults.innerHTML = ''; // Clear previous results
+
+			if (data.results && data.results.length > 0) {
+				data.results.forEach((book) => {
+					const bookElement = document.createElement('div');
+					bookElement.innerHTML = `
+                      <div class="bg-[#d2b48c] flex flex-col items-center w-full p-6 rounded-lg shadow-md space-y-4 h-full">
+                        <h2>${book.title}</h2>
+                        <p>Publication Year: ${book.publication_year}</p>
+                        <p>Author Name: ${book.author_name || 'No Author'}</p>
+                        <img class="hover:scale-105 transition-all duration-300" src="${
+													book.book_url || ''
+												}" alt="Book Image">
+                      </div>
+                    `;
+					searchResults.appendChild(bookElement);
+				});
+			} else {
+				searchResults.innerHTML = `<p>No matching books found.</p>`;
+			}
+		})
+		.catch((error) => {
+			console.error('Error searching books:', error);
+		});
+}
+
 function addReview() {
 	const bookId = document.getElementById('bookId').value;
 	const userName = document.getElementById('userName').value;
@@ -132,3 +182,11 @@ function showAllReviews() {
 			console.error('Error fetching reviews:', error);
 		});
 }
+
+// Attach search button click
+document.addEventListener('DOMContentLoaded', () => {
+	const searchButton = document.getElementById('searchButton');
+	if (searchButton) {
+		searchButton.addEventListener('click', searchBooks);
+	}
+});
